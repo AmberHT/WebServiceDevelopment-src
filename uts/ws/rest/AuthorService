@@ -1,0 +1,47 @@
+package uts.ws.rest;
+ import javax.servlet.ServletContext;
+ import javax.ws.rs.*;
+ import javax.ws.rs.core.*;
+ import javax.xml.bind.JAXBException;
+ import javax.xml.bind.annotation.XmlElementRef;
+ import javax.xml.bind.annotation.XmlSeeAlso;
+ 
+ import uts.ws.*;
+ 
+ import java.io.*;
+  
+ @Path("/authors")
+ public class AuthorService {
+ 	@Context
+ 	 private ServletContext application;
+ 	 
+ 	 private AuthorApplication getAuthorApp() throws JAXBException, IOException {
+ 	  synchronized (application) {
+ 	   AuthorApplication authorApp = (AuthorApplication)application.getAttribute("authorApp");
+ 	   if (authorApp == null) {
+ 	    authorApp = new AuthorApplication();
+ 	    authorApp.setFilePath(application.getRealPath("WEB-INF/authors.xml"));
+ 	    application.setAttribute("authorApp", authorApp);
+ 	   }
+ 	   return authorApp;
+ 	  }
+ 	 }
+ 	 //Get author by Email
+ 	 @Path("author")
+ 	 @GET
+ 	 @Produces(MediaType.APPLICATION_XML) 
+ 	 @XmlElementRef
+ 	 public Author getAuthors(@QueryParam("email") String email) throws JAXBException, IOException{
+ 		  return getAuthorApp().getAuthors().findByEmail(email);
+ 	 }
+ 	 //Get author linking articles.xml to users.xml, i.e. articles.name = users.name
+	 @Path("author")
+ 	 @GET
+ 	 @Produces(MediaType.APPLICATION_XML) 
+ 	 @XmlElementRef
+ 	 public Author getAuthor(@QueryParam("name") String name) throws JAXBException, IOException{
+ 		  return getUserApp().getUsers().findByName(name);
+ 	 }
+ 	 
+ 	 
+ }
